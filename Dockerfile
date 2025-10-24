@@ -1,23 +1,20 @@
-# Usa una imagen oficial de PHP con Apache
-FROM php:8.2-apache
+# Usa una imagen base de Python 3.9
+FROM python:3.9-slim
 
-# Mantenedor (opcional)
-LABEL maintainer="jhonj@192.168.1.72"
+# Establece el directorio de trabajo dentro del contenedor
+WORKDIR /app
 
-# Instalar Git y habilitar mod_rewrite
-RUN apt-get update && \
-    apt-get install -y git && \
-    a2enmod rewrite && \
-    rm -rf /var/lib/apt/lists/*
+# Copia el archivo de dependencias
+COPY requirements.txt .
 
-# Copiar la configuración de Apache y los archivos web
-COPY ./www /var/www/html
+# Instala las dependencias
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Cambiar el propietario de los archivos
-RUN chown -R www-data:www-data /var/www/html
+# Copia todos los archivos del proyecto al contenedor
+COPY . .
 
-# Exponer el puerto 80
-EXPOSE 80
+# Expone el puerto 5000 (donde Flask escucha por defecto)
+EXPOSE 5000
 
-# Iniciar Apache
-CMD ["apache2-foreground"]
+# Comando para iniciar el servidor SMTP en segundo plano y luego la aplicación
+CMD ["sh", "-c", "python -m smtpd -n -c DebuggingServer localhost:1024 & python app.py"]
