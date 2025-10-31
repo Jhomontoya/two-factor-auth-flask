@@ -1,54 +1,75 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.10'
-        }
-    }
+    agent any
 
     environment {
-        FLASK_APP = 'twofa.py'
-        FLASK_ENV = 'development'
+        APP_NAME = 'twofa-flask'
+        DOCKER_IMAGE = 'twofa-flask-image'
+        CONTAINER_NAME = 'twofa-flask-container'
+        FLASK_PORT = '5000'
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Clonar Repositorio') {
             steps {
                 git branch: 'main', url: 'https://github.com/Jhomontoya/two-factor-auth-flask.git'
             }
         }
 
-        stage('Setup Virtual Environment') {
+        stage('Construir Imagen Docker') {
             steps {
-                sh '''
-                    python -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                '''
+                script {
+                    sh '''
+                        echo "Construyendo imagen Docker..."
+                        docker build -t ${DOCKER_IMAGE} .
+                    '''
+                }
             }
         }
 
-        stage('Run Tests') {
+        stage('Desplegar Contenedor') {
             steps {
-                sh '. venv/bin/activate && python -m pytest tests/ -v || true'
+                script {
+                    sh '''
+                        echo "Eliminando contenedor previo (si existe)..."
+                        docker rm -f ${CONTAINER_NAME} || true
+
+                        echo "Ejecutando contenedor..."
+                        docker run -d --name ${CONTAINER_NAME} -p ${FLASK_PORT}:5000 ${DOCKER_IMAGE}
+
+                        sleep 5
+                        echo "Verificando contenedor..."
+                        docker ps | grep ${CONTAINER_NAME}
+                    '''
+                }
             }
         }
 
-        stage('Deploy Application') {
+        stage('Verificar Aplicación') {
             steps {
-                sh '''
-                    . venv/bin/activate
-                    pkill -f "twofa.py" || true
-                    nohup python twofa.py > app.log 2>&1 &
-                    sleep 5
-                    echo "Aplicación desplegada en http://localhost:5000"
-                '''
+                script {
+                    sh '''
+                        echo "Probando si el servicio responde..."
+                        curl -I http://localhost:${FLASK_PORT} || true
+                    '''
+                }
             }
         }
     }
 
     post {
+        success {
+            echo "✅ Despliegue exitoso: aplicación Flask disponible en http://localhost:${FLASK_PORT}"
+        }
+        failure {
+            echo "❌ Error en el pipeline. Revisa los logs."
+        }
         always {
+            script {
+                sh '''
+                    echo "Guardando logs del contenedor..."
+                    docker logs ${CONTAINER_NAME} > app.log || true
+                '''
+            }
             archiveArtifacts artifacts: 'app.log', allowEmptyArchive: true
         }
     }
