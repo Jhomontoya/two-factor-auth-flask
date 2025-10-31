@@ -1,22 +1,26 @@
 pipeline {
-    agent any
-    
+    agent {
+        docker {
+            image 'python:3.10'
+        }
+    }
+
     environment {
         FLASK_APP = 'twofa.py'
         FLASK_ENV = 'development'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                git branch: 'master', url: 'https://github.com/Jhomontoya/two-factor-auth-flask.git'
+                git branch: 'main', url: 'https://github.com/Jhomontoya/two-factor-auth-flask.git'
             }
         }
 
-        stage('Setup Environment') {
+        stage('Setup Virtual Environment') {
             steps {
                 sh '''
-                    python3 -m venv venv
+                    python -m venv venv
                     . venv/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
@@ -26,19 +30,17 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh '''
-                    . venv/bin/activate
-                    pytest || echo "No tests found"
-                '''
+                sh '. venv/bin/activate && python -m pytest tests/ -v || true'
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy Application') {
             steps {
                 sh '''
                     . venv/bin/activate
                     pkill -f "twofa.py" || true
                     nohup python twofa.py > app.log 2>&1 &
+                    sleep 5
                     echo "Aplicación desplegada en http://localhost:5000"
                 '''
             }
