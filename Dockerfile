@@ -14,4 +14,4 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 EXPOSE 5000
 
 # Comando para ejecutar la aplicación Flask
-CMD ["python", "twofa.py"]
+CMD ["python", "app.py"]
