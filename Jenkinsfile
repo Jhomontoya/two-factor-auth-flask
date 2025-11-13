@@ -1,75 +1,50 @@
 pipeline {
     agent any
-
+    
     environment {
-        APP_NAME = 'twofa-flask'
-        DOCKER_IMAGE = 'twofa-flask-image'
-        CONTAINER_NAME = 'twofa-flask-container'
-        FLASK_PORT = '5000'
+        FLASK_APP = 'app.py'
+        FLASK_ENV = 'development'
     }
-
+    
     stages {
-        stage('Clonar Repositorio') {
+        stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/Jhomontoya/two-factor-auth-flask.git'
+                git branch: 'main', 
+                    url: 'https://github.com/Jhomontoya/two-factor-auth-flask.git'
             }
         }
-
-        stage('Construir Imagen Docker') {
+        
+        stage('Setup Virtual Environment') {
             steps {
-                script {
-                    sh '''
-                        echo "Construyendo imagen Docker..."
-                        docker build -t ${DOCKER_IMAGE} .
-                    '''
-                }
+                sh 'python3 -m venv venv'
+                sh 'source venv/bin/activate && pip install --upgrade pip'
+                sh 'source venv/bin/activate && pip install -r requirements.txt'
             }
         }
-
-        stage('Desplegar Contenedor') {
+        
+        stage('Run Tests') {
             steps {
-                script {
-                    sh '''
-                        echo "Eliminando contenedor previo (si existe)..."
-                        docker rm -f ${CONTAINER_NAME} || true
-
-                        echo "Ejecutando contenedor..."
-                        docker run -d --name ${CONTAINER_NAME} -p ${FLASK_PORT}:5000 ${DOCKER_IMAGE}
-
-                        sleep 5
-                        echo "Verificando contenedor..."
-                        docker ps | grep ${CONTAINER_NAME}
-                    '''
-                }
+                sh 'source venv/bin/activate && python -m pytest tests/ -v'
             }
         }
-
-        stage('Verificar Aplicación') {
+        
+        stage('Deploy Application') {
             steps {
-                script {
-                    sh '''
-                        echo "Probando si el servicio responde..."
-                        curl -I http://localhost:${FLASK_PORT} || true
-                    '''
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Despliegue exitoso: aplicación Flask disponible en http://localhost:${FLASK_PORT}"
-        }
-        failure {
-            echo "❌ Error en el pipeline. Revisa los logs."
-        }
-        always {
-            script {
                 sh '''
-                    echo "Guardando logs del contenedor..."
-                    docker logs ${CONTAINER_NAME} > app.log || true
+                    source venv/bin/activate
+                    # Detener instancia anterior si existe
+                    pkill -f "app.py" || true
+                    # Iniciar la aplicación en segundo plano
+                    nohup python app.py > app.log 2>&1 &
+                    sleep 5
+                    echo "Aplicación desplegada en http://localhost:5000"
                 '''
             }
+        }
+    }
+    
+    post {
+        always {
             archiveArtifacts artifacts: 'app.log', allowEmptyArchive: true
         }
     }
