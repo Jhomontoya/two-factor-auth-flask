@@ -10,7 +10,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, \
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import Required, Length, EqualTo
+from wtforms.validators import DataRequired, Length, EqualTo
 import onetimepass
 import pyqrcode
 
@@ -65,18 +65,18 @@ def load_user(user_id):
 
 class RegisterForm(FlaskForm):
     """Registration form."""
-    username = StringField('Username', validators=[Required(), Length(1, 64)])
-    password = PasswordField('Password', validators=[Required()])
+    username = StringField('Username', validators=[DataRequired(), Length(1, 64)])
+    password = PasswordField('Password', validators=[DataRequired()])
     password_again = PasswordField('Password again',
-                                   validators=[Required(), EqualTo('password')])
+                                   validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
 
 
 class LoginForm(FlaskForm):
     """Login form."""
-    username = StringField('Username', validators=[Required(), Length(1, 64)])
-    password = PasswordField('Password', validators=[Required()])
-    token = StringField('Token', validators=[Required(), Length(6, 6)])
+    username = StringField('Username', validators=[DataRequired(), Length(1, 64)])
+    password = PasswordField('Password', validators=[DataRequired()])
+    token = StringField('Token', validators=[DataRequired(), Length(6, 6)])
     submit = SubmitField('Login')
 
 
