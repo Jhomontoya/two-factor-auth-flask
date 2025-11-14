@@ -18,7 +18,7 @@ pipeline {
             steps {
                 sh '''
                     python3 -m venv venv
-                    source venv/bin/activate
+                    . venv/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
@@ -28,7 +28,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    source venv/bin/activate
+                    . venv/bin/activate
                     python -m pytest tests/ -v
                 '''
             }
@@ -37,7 +37,7 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 sh '''
-                    source venv/bin/activate
+                    . venv/bin/activate
                     # Detener instancia anterior si existe
                     pkill -f "app.py" || true
                     # Iniciar la aplicación en segundo plano
