@@ -16,15 +16,21 @@ pipeline {
         
         stage('Setup Virtual Environment') {
             steps {
-                sh 'python3 -m venv venv'
-                sh 'source venv/bin/activate && pip install --upgrade pip'
-                sh 'source venv/bin/activate && pip install -r requirements.txt'
+                sh '''
+                    python3 -m venv venv
+                    source venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
             }
         }
         
         stage('Run Tests') {
             steps {
-                sh 'source venv/bin/activate && python -m pytest tests/ -v'
+                sh '''
+                    source venv/bin/activate
+                    python -m pytest tests/ -v
+                '''
             }
         }
         
