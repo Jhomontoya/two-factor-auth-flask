@@ -40,9 +40,11 @@ pipeline {
                 sh '''
                     . venv/bin/activate
                     # Detener instancia anterior si existe
-                    pkill -f "gunicorn" || pkill -f "app.py" || true
-                    # Iniciar la aplicación en segundo plano usando gunicorn
-                    nohup gunicorn --bind 0.0.0.0:5000 --workers 1 app:app > app.log 2>&1 &
+                    # Usamos pkill -f "gunicorn" en lugar de pkill -f "app.py" ahora
+                    pkill -f "gunicorn" || true
+                    sleep 3 # Espera un poco después de matar procesos anteriores
+                    # Iniciar la aplicación en segundo plano usando gunicorn (sin nohup por ahora)
+                    gunicorn --bind 0.0.0.0:5000 --workers 1 app:app --daemon --error-logfile gunicorn_error.log --access-logfile gunicorn_access.log
                     sleep 10  # Espera 10 segundos para que gunicorn inicie
                     echo "Aplicación desplegada en http://localhost:5000"
                 '''
