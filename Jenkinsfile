@@ -41,8 +41,8 @@ pipeline {
                     . venv/bin/activate
                     # Detener instancia anterior si existe
                     pkill -f "app.py" || true
-                    # Iniciar la aplicación en segundo plano, especificando explícitamente el host y puerto
-                    nohup python -m flask run --host=0.0.0.0 --port=5000 > app.log 2>&1 &
+                    # Iniciar la aplicación en segundo plano usando el comando oficial de Flask
+                    nohup flask run --host=0.0.0.0 --port=5000 > app.log 2>&1 &
                     sleep 5
                     echo "Aplicación desplegada en http://localhost:5000"
                 '''
