@@ -41,8 +41,8 @@ pipeline {
                     . venv/bin/activate
                     # Detener instancia anterior si existe
                     pkill -f "app.py" || true
-                    # Iniciar la aplicación en segundo plano
-                    nohup python app.py > app.log 2>&1 &
+                    # Iniciar la aplicación en segundo plano, escuchando en todas las interfaces
+                    nohup python app.py --host=0.0.0.0 --port=5000 > app.log 2>&1 &
                     sleep 5
                     echo "Aplicación desplegada en http://localhost:5000"
                 '''
