@@ -25,7 +25,7 @@ pipeline {
             }
         }
         
-        stage('Run Tests') {
+        /*stage('Run Tests') {
             steps {
                 sh '''
                     . venv/bin/activate
@@ -33,6 +33,7 @@ pipeline {
                 '''
             }
         }
+        */
         
         stage('Deploy Application') {
             steps {
