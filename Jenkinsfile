@@ -40,12 +40,10 @@ pipeline {
                 sh '''
                     . venv/bin/activate
                     # Detener instancia anterior si existe
-                    pkill -f "app.py" || true
-                    # Iniciar la aplicación en segundo plano usando el comando oficial de Flask
-                    # Aseguramos FLASK_APP por si acaso
-                    export FLASK_APP=app.py
-                    nohup flask run --host=0.0.0.0 --port=5000 > app.log 2>&1 &
-                    sleep 10  # Aumentamos el sleep para darle más tiempo
+                    pkill -f "gunicorn" || pkill -f "app.py" || true
+                    # Iniciar la aplicación en segundo plano usando gunicorn
+                    nohup gunicorn --bind 0.0.0.0:5000 --workers 1 app:app > app.log 2>&1 &
+                    sleep 10  # Espera 10 segundos para que gunicorn inicie
                     echo "Aplicación desplegada en http://localhost:5000"
                 '''
             }
