@@ -44,10 +44,10 @@ pipeline {
                     sleep 3 # Espera un poco después de matar procesos anteriores
                     # Iniciar la aplicación en segundo plano usando gunicorn con nohup y setsid
                     # setsid crea una nueva sesión, aislándolo aún más del proceso Jenkins
-                    nohup setsid gunicorn --bind 0.0.0.0:5000 --workers 1 app:app --error-logfile gunicorn_error.log --access-logfile gunicorn_access.log &
+                    nohup setsid gunicorn --bind 0.0.0.0:8000 --workers 1 app:app --error-logfile gunicorn_error.log --access-logfile gunicorn_access.log &
                     # Espera un poco para que inicie
                     sleep 10
-                    echo "Aplicación desplegada en http://localhost:5000"
+                    echo "Aplicación desplegada en http://localhost:8000"
                 '''
             }
         }
