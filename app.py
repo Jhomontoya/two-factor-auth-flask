@@ -23,6 +23,7 @@ bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
 lm = LoginManager(app)
 
+
 class User(UserMixin, db.Model):
     """User model."""
     __tablename__ = 'users'
@@ -55,10 +56,12 @@ class User(UserMixin, db.Model):
     def verify_totp(self, token):
         return onetimepass.valid_totp(token, self.otp_secret)
 
+
 @lm.user_loader
 def load_user(user_id):
     """User loader callback for Flask-Login."""
     return User.query.get(int(user_id))
+
 
 class RegisterForm(FlaskForm):
     """Registration form."""
@@ -68,6 +71,7 @@ class RegisterForm(FlaskForm):
                                    validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
 
+
 class LoginForm(FlaskForm):
     """Login form."""
     username = StringField('Username', validators=[DataRequired(), Length(1, 64)])
@@ -75,9 +79,11 @@ class LoginForm(FlaskForm):
     token = StringField('Token', validators=[DataRequired(), Length(6, 6)])
     submit = SubmitField('Login')
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -101,6 +107,7 @@ def register():
         return redirect(url_for('two_factor_setup'))
     return render_template('register.html', form=form)
 
+
 @app.route('/twofactor')
 def two_factor_setup():
     if 'username' not in session:
@@ -114,6 +121,7 @@ def two_factor_setup():
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'}
+
 
 @app.route('/qrcode')
 def qrcode():
@@ -136,6 +144,7 @@ def qrcode():
         'Pragma': 'no-cache',
         'Expires': '0'}
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """User login route."""
@@ -156,15 +165,18 @@ def login():
         return redirect(url_for('index'))
     return render_template('login.html', form=form)
 
+
 @app.route('/logout')
 def logout():
     """User logout route."""
     logout_user()
     return redirect(url_for('index'))
 
+
 # create database tables if they don't exist yet
 with app.app_context():
     db.create_all()
 
+
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=8000) # Asegúrate de que el puerto sea el que deseas
+    app.run(debug=True, host='0.0.0.0') #, port=8000) # Asegúrate de que el puerto sea el que deseas
