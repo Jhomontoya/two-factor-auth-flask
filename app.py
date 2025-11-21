@@ -179,4 +179,8 @@ with app.app_context():
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     app.run(debug=True, host='0.0.0.0') #, port=8000) # Asegúrate de que el puerto sea el que deseas
+=======
+    app.run(debug=True, host='0.0.0.0')    #, port=8000) # Asegúrate de que el puerto sea el que deseas
+>>>>>>> f99ca6e6547f133086481a2d3b09b0d37b8712d9

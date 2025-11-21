@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  app:
+    build: .  # Construye la imagen desde el Dockerfile en el directorio actual
+    ports:
+      - "5000:5000"  # Mapea el puerto 5000 del contenedor al 5000 del host
+    environment:
+      - FLASK_APP=app.py  # Variable de entorno para Flask
+      - DATABASE_URL=sqlite:////data/db.sqlite # Ruta dentro del contenedor para la DB
+    volumes:
+      - data:/data  # Volumen para persistir la base de datos
+    depends_on:
+      - db  # Asegura que el servicio 'db' esté arriba antes de iniciar 'app'
+    command: gunicorn --bind 0.0.0.0:5000 app:app # Comando para ejecutar la app
+
+  # Opcional: Servicio para una base de datos SQLite (no es lo más común, pero posible)
+  # Para SQLite, no necesitas un servicio separado como PostgreSQL o MySQL,
+  # pero puedes usar un volumen para persistir el archivo de la base de datos.
+  # El volumen 'data' definido abajo es suficiente para SQLite.
+
+# Definición de volúmenes
+volumes:
+  data:  # Volumen para almacenar la base de datos SQLite
